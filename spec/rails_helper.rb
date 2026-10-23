@@ -7,8 +7,20 @@ require "spec_helper"
 require "rspec/rails"
 require "capybara/rails"
 require "capybara/rspec"
+require "capybara_screenshot_diff/rspec"
 
 Capybara.asset_host = "http://localhost:3000"
+
+Capybara::Screenshot::Diff.configure do |screenshot, diff|
+  screenshot.window_size = [1280, 1024]
+  screenshot.stability_time_limit = 1
+  # The app's strict CSP (style-src :self, no nonce) blocks the gem's inline
+  # <style> injection used to hide the text caret before capturing.
+  screenshot.hide_caret = false
+  diff.driver = :chunky_png
+  diff.color_distance_limit = 15
+  diff.tolerance = 0.01
+end
 
 Capybara.register_driver :chrome do |app|
   Capybara::Selenium::Driver.new(app, browser: :chrome)
